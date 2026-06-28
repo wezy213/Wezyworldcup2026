@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wezy World Cup 26</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-card">
+      <div class="cup">🏆</div>
+      <h1>Wezy World Cup 26</h1>
+      <p>تحدي توقعات كأس العالم 2026 — تنظيم Wezy</p>
+      <div class="pill">الأدوار الإقصائية هي الواجهة الرئيسية</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats-grid">
+      <div class="stat"><span>👥 المشاركون</span><b id="statPlayers">0</b></div>
+      <div class="stat"><span>📝 التوقعات</span><b id="statPreds">0</b></div>
+      <div class="stat"><span>⚽ المباريات</span><b id="statMatches">0</b></div>
+    </section>
+
+    <section class="card" id="loginCard">
+      <h2>🔐 تسجيل الدخول</h2>
+      <p id="me" class="muted">غير مسجل دخول</p>
+      <input id="email" type="email" placeholder="الإيميل" autocomplete="email">
+      <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+      <input id="username" type="text" placeholder="اسمك عند إنشاء حساب جديد فقط">
+      <label class="label">توقع بطل كأس العالم</label>
+      <select id="champion"></select>
+      <div class="actions">
+        <button onclick="signIn()">دخول</button>
+        <button class="secondary" onclick="signUp()">إنشاء حساب</button>
+        <button class="danger" onclick="signOut()">خروج</button>
+      </div>
+    </section>
+
+    <section class="card quick">
+      <h2>⚡ ملخصك السريع</h2>
+      <div id="quickSummary" class="quick-grid"></div>
+    </section>
+
+    <section class="card" id="matchesSection">
+      <h2>⚽ التوقعات</h2>
+      <div class="toolbar">
+        <select id="roundFilter" onchange="renderMatches()"></select>
+        <button class="secondary" onclick="setFilter('knockout')">الإقصائية</button>
+        <button class="secondary" onclick="setFilter('groups')">المجموعات</button>
+      </div>
+      <div id="matchesList" class="matches-list"></div>
+    </section>
+
+    <section class="card" id="leaderboardSection">
+      <h2>🏅 الترتيب</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>الاسم</th><th>البطل</th><th>النقاط</th></tr></thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="myResultsSection">
+      <h2>📊 نتائجي</h2>
+      <div id="myResults"></div>
+    </section>
+
+    <section class="card" id="bracketSection">
+      <h2>🌳 الأدوار الإقصائية</h2>
+      <p class="muted">تظهر هنا مباريات الإقصائيات. التوقعات الفعلية موجودة في قسم التوقعات، وإذا توقعت تعادلًا يظهر خيار المتأهل.</p>
+      <div id="bracketList"></div>
+    </section>
+
+    <section class="card collapsible" id="teamsSection">
+      <h2>🏳️ المنتخبات والمجموعات</h2>
+      <p class="muted">المجموعات مخفية عن الواجهة الرئيسية ويمكن فتحها من هنا عند الحاجة.</p>
+      <details>
+        <summary>فتح المجموعات</summary>
+        <div id="groups"></div>
+      </details>
+    </section>
+
+    <section class="card" id="accuracySection">
+      <h2>🔥 أكثر التوقعات دقة</h2>
+      <div id="accuracyList"></div>
+    </section>
+
+    <section class="card" id="rulesSection">
+      <h2>📜 آلية احتساب النقاط</h2>
+      <div class="rules-grid">
+        <div><b>🎯 النتيجة الصحيحة</b><span>5 نقاط</span></div>
+        <div><b>✅ الفائز الصحيح</b><span>2 نقاط</span></div>
+        <div><b>🤝 التعادل الصحيح</b><span>1 نقطة</span></div>
+        <div><b>🥅 متأهل الإقصائيات بعد التعادل</b><span>+3 نقاط</span></div>
+        <div><b>🏆 بطل البطولة</b><span>25 نقطة في نهاية البطولة</span></div>
+      </div>
+    </section>
+
+    <section class="card" id="adminSection">
+      <h2>🔐 لوحة Wezy</h2>
+      <p class="muted">إدخال النتائج هنا لا يحذف أي بيانات قديمة. عند التعادل في الإقصائيات اختر المتأهل لحساب +3.</p>
+      <input id="adminCode" type="password" placeholder="رمز Wezy">
+      <select id="adminMatch" onchange="renderAdminQualifier()"></select>
+      <div class="score-inputs">
+        <input id="resHome" type="number" min="0" inputmode="numeric" placeholder="أهداف الفريق الأول">
+        <span>-</span>
+        <input id="resAway" type="number" min="0" inputmode="numeric" placeholder="أهداف الفريق الثاني">
+      </div>
+      <div id="adminQualifierBox" class="qualifier-box hidden"></div>
+      <button onclick="saveResultAndScore()">حفظ النتيجة وحساب النقاط</button>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="#matchesSection">🏠<span>التوقعات</span></a>
+    <a href="#leaderboardSection">🏅<span>الترتيب</span></a>
+    <a href="#myResultsSection">📊<span>نتائجي</span></a>
+    <a href="#bracketSection">🌳<span>الإقصائية</span></a>
+    <a href="#rulesSection">📜<span>القوانين</span></a>
+  </nav>
+
+  <footer>Wezy World Cup 26 © 2026</footer>
+</body>
+</html>
