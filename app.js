@@ -180,9 +180,9 @@ function calcPoints(p,r){
   if(!Number.isFinite(ph)||!Number.isFinite(pa)||!Number.isFinite(rh)||!Number.isFinite(ra))return 0;
   const predDraw=ph===pa, realDraw=rh===ra, exact=ph===rh&&pa===ra;
   let pts=0;
-  if(exact) pts+=5;
-  if(predDraw && realDraw) pts+=1;
-  if(!predDraw && !realDraw && ((ph>pa&&rh>ra)||(ph<pa&&rh<ra))) pts+=2;
+if(exact) return 7;
+if(predDraw && realDraw) return 1;
+if(!predDraw && !realDraw && ((ph>pa&&rh>ra)||(pa>ph&&ra>rh))) return 2;
   if(isKnockout(m)&&predDraw&&realDraw){
     const predictedQualifier=normalizeWinnerCode(p.winner_code,m,r);
     const actualQualifier=normalizeWinnerCode(r.winner_code,m,r);
