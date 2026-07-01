@@ -202,6 +202,53 @@ function pointsForPrediction(p){
   const r=results.find(x=>String(x.match_id)===String(p.match_id));
   return calcPoints(p,r);
 }
+function renderBracket(){
+  const kos=matches.filter(isKnockout);
+  $("bracketList").className="bracket-grid";
+  $("bracketList").innerHTML=kos.map(m=>`<div class="bracket-card"><b>${m.round} - مباراة ${m.match_no}</b><br>${label(m.home_code,m.home_placeholder)} × ${label(m.away_code,m.away_placeholder)}<br><span class="small">${fmtDate(m.kickoff_at)}</span></div>`).join("");
+}
+function normalizeWinnerCode(code,m,r){
+  if(!code)return null;
+  if(code==="HOME")return m?.home_code;
+  if(code==="AWAY")return m?.away_code;
+  if(code==="DRAW")return "DRAW";
+  return code;
+}
+
+function calcPoints(p,r){
+  if(!r)return 0;
+
+  const m=matches.find(x=>String(x.id)===String(p.match_id));
+  const ph=Number(p.home_goals), pa=Number(p.away_goals);
+  const rh=Number(r.home_goals), ra=Number(r.away_goals);
+
+  if(!Number.isFinite(ph)||!Number.isFinite(pa)||!Number.isFinite(rh)||!Number.isFinite(ra))return 0;
+
+  const predDraw=ph===pa;
+  const realDraw=rh===ra;
+  const exact=ph===rh && pa===ra;
+
+  let pts=0;
+
+  if(exact) pts += 7;
+  else if(predDraw && realDraw) pts += 1;
+  else if(!predDraw && !realDraw && ((ph>pa&&rh>ra)||(pa>ph&&ra>rh))) pts += 2;
+
+  if(isKnockout(m)&&predDraw&&realDraw){
+    const predictedQualifier=normalizeWinnerCode(p.winner_code,m,r);
+    const actualQualifier=normalizeWinnerCode(r.winner_code,m,r);
+    if(predictedQualifier && actualQualifier && predictedQualifier!=="DRAW" && predictedQualifier===actualQualifier){
+      pts += 3;
+    }
+  }
+
+  return pts;
+}
+
+function pointsForPrediction(p){
+  const r=results.find(x=>String(x.match_id)===String(p.match_id));
+  return calcPoints(p,r);
+}
 
 function renderBracket(){
   const kos=matches.filter(isKnockout);
