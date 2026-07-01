@@ -159,6 +159,29 @@ async function savePrediction(id){
   const {error}=await db.from("predictions_v2").upsert(payload,{onConflict:"user_id,match_id"});
   if(error)return alert(error.message);
   alert("تم حفظ التوقع"); await loadAll();
+} 
+function calcPoints(p,r){
+  if(!r)return 0;
+  const m=matches.find(x=>String(x.id)===String(p.match_id));
+  const ph=Number(p.home_goals), pa=Number(p.away_goals), rh=Number(r.home_goals), ra=Number(r.away_goals);
+  if(!Number.isFinite(ph)||!Number.isFinite(pa)||!Number.isFinite(rh)||!Number.isFinite(ra))return 0;
+
+  const predDraw=ph===pa, realDraw=rh===ra, exact=ph===rh&&pa===ra;
+  let pts=0;
+
+  if(exact) pts += 7;
+  else if(predDraw && realDraw) pts += 1;
+  else if(!predDraw && !realDraw && ((ph>pa&&rh>ra)||(pa>ph&&ra>rh))) pts += 2;
+
+  if(isKnockout(m)&&predDraw&&realDraw){
+    const predictedQualifier=normalizeWinnerCode(p.winner_code,m,r);
+    const actualQualifier=normalizeWinnerCode(r.winner_code,m,r);
+    if(predictedQualifier && actualQualifier && predictedQualifier!=="DRAW" && predictedQualifier===actualQualifier) {
+      pts += 3;
+    }
+  }
+
+  return pts;
 }
 function renderBracket(){
   const kos=matches.filter(isKnockout);
