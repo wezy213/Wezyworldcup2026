@@ -180,8 +180,6 @@ function calcPoints(p,r){
   const predDraw=ph===pa;
   const realDraw=rh===ra;
   const exact=ph===rh && pa===ra;
-
-  let pts=0;
 let pts=0;
 if(exact) pts += 5;
 if(predDraw && realDraw) pts += 1;
