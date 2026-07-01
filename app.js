@@ -182,10 +182,10 @@ function calcPoints(p,r){
   const exact=ph===rh && pa===ra;
 
   let pts=0;
-
-  if(exact) pts += 7;
-  else if(predDraw && realDraw) pts += 1;
-  else if(!predDraw && !realDraw && ((ph>pa&&rh>ra)||(pa>ph&&ra>rh))) pts += 2;
+let pts=0;
+if(exact) pts += 5;
+if(predDraw && realDraw) pts += 1;
+else if((ph>pa && rh>ra) || (ph<pa && rh<ra)) pts += 2;
 
   if(isKnockout(m)&&predDraw&&realDraw){
     const predictedQualifier=normalizeWinnerCode(p.winner_code,m,r);
