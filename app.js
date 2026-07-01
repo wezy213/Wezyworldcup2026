@@ -181,8 +181,7 @@ function calcPoints(p,r){
     }
   }
 
-  return pts;
-}
+  return p
 function renderBracket(){
   const kos=matches.filter(isKnockout);
   $("bracketList").className="bracket-grid";
