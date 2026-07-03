@@ -167,7 +167,6 @@ function normalizeWinnerCode(code,m,r){
   if(code==="DRAW")return "DRAW";
   return code;
 }
-
 function calcPoints(p,r){
   if(!r)return 0;
 
@@ -195,7 +194,6 @@ else if((ph>pa && rh>ra) || (ph<pa && rh<ra)) pts += 2;
 
   return pts;
 }
-
 function pointsForPrediction(p){
   const r=results.find(x=>String(x.match_id)===String(p.match_id));
   return calcPoints(p,r);
