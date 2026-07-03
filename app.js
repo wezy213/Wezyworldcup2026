@@ -411,48 +411,32 @@ async function recalcAllPointsInDatabase(){
   await Promise.allSettled(updates); 
   return {ok:true};
 }
-
-function placeholderTexts(type,matchNo){
-  return [
-    `${type} مباراة ${matchNo}`,
-    `${type} المباراه ${matchNo}`,
-    `${type} مبارة ${matchNo}`,
-    `${type} الماتش ${matchNo}`,
-    `${type} Match ${matchNo}`,
-    `${type} match ${matchNo}`
-  ];
-}
-
-async function updateKnockoutTeams(match_id,winner_code){
+  async function updateKnockoutTeams(match_id,winner_code){
   const m=matches.find(x=>String(x.id)===String(match_id));
   if(!m||!winner_code||winner_code==="DRAW")return;
 
   const winner=normalizeWinnerCode(winner_code,m);
   const loser=winner===m.home_code?m.away_code:m.home_code;
 
-  if(!winner)return;
+  const targets=matches.filter(x=>
+    Number(x.home_from_match)===Number(m.match_no) ||
+    Number(x.away_from_match)===Number(m.match_no)
+  );
 
-  const winnerTexts=placeholderTexts("فائز",m.match_no);
-  const loserTexts=placeholderTexts("خاسر",m.match_no);
-  const updates=[];
-
-  for(const next of matches){
+  for(const next of targets){
     const payload={};
 
-    if(winnerTexts.includes(next.home_placeholder)) payload.home_code=winner;
-    if(winnerTexts.includes(next.away_placeholder)) payload.away_code=winner;
-
-    if(loser && loserTexts.includes(next.home_placeholder)) payload.home_code=loser;
-    if(loser && loserTexts.includes(next.away_placeholder)) payload.away_code=loser;
-
-    if(Object.keys(payload).length){
-      updates.push(db.from("matches").update(payload).eq("id",next.id));
+    if(Number(next.home_from_match)===Number(m.match_no)){
+      payload.home_code=next.home_from_result==="loser"?loser:winner;
     }
+
+    if(Number(next.away_from_match)===Number(m.match_no)){
+      payload.away_code=next.away_from_result==="loser"?loser:winner;
+    }
+
+    await db.from("matches").update(payload).eq("id",next.id);
   }
-
-  if(updates.length) await Promise.allSettled(updates);
 }
-
 async function saveResultAndScore(){
   if($("adminCode").value!==WEZY_ADMIN_CODE)return alert("رمز Wezy غير صحيح");
 
