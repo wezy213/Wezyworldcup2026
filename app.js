@@ -134,7 +134,7 @@ function renderMatches(){
     if(f==="groups") return isGroup(m);
     return true;
   });
-
+list.sort((a,b)=>new Date(a.kickoff_at)-new Date(b.kickoff_at));
   if(!list.length){
     $("matchesList").innerHTML=`<p class="muted center-text">لا توجد مباريات في هذا القسم حالياً.</p>`;
     return;
