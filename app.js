@@ -37,7 +37,7 @@ function renderAll(){
   $("statPreds").textContent=predictions.length;
   $("statMatches").textContent=matches.length;
   renderMe(); renderChampion(); renderTeams(); renderRounds(); renderMatches(); renderBracket(); renderLeaderboard(); renderMyResults(); renderAccuracy(); renderQuickSummary(); renderAdmin();
-}
+renderAdminOverride(); }
 
 function renderMe(){
   const prof=session&&profiles.find(p=>p.id===session.user.id);
@@ -465,3 +465,77 @@ async function saveResultAndScore(){
 
 setInterval(()=>loadAll(),60000);
 init();
+function isWezyAdmin(){
+  if(!session?.user?.id) return false;
+  const me = profiles.find(p => String(p.id) === String(session.user.id));
+  return me?.username === "Wezy";
+}
+
+function renderAdminOverride(){
+  if(!isWezyAdmin()) return;
+
+  let box = $("wezyAdminPanel");
+
+  if(!box){
+    box = document.createElement("section");
+    box.id = "wezyAdminPanel";
+    box.className = "card";
+    box.innerHTML = `
+      <h2>لوحة تحكم Wezy</h2>
+
+      <label>اختر اللاعب</label>
+      <select id="adminUserSelect"></select>
+
+      <label>اختر المباراة</label>
+      <select id="adminMatchSelect"></select>
+
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <input id="adminHomeGoals" type="number" placeholder="أهداف الفريق الأول">
+        <input id="adminAwayGoals" type="number" placeholder="أهداف الفريق الثاني">
+      </div>
+
+      <button onclick="saveAdminOverride()" style="margin-top:12px">
+        حفظ التوقع
+      </button>
+    `;
+
+    document.body.prepend(box);
+  }
+
+  $("adminUserSelect").innerHTML =
+    profiles.map(p => `<option value="${p.id}">${p.username}</option>`).join("");
+
+  $("adminMatchSelect").innerHTML =
+    matches.map(m => `
+      <option value="${m.id}">
+        مباراة ${m.match_no}: ${label(m.home_code,m.home_placeholder)} × ${label(m.away_code,m.away_placeholder)}
+      </option>
+    `).join("");
+}
+
+async function saveAdminOverride(){
+  const userId = $("adminUserSelect").value;
+  const matchId = $("adminMatchSelect").value;
+  const homeGoals = Number($("adminHomeGoals").value);
+  const awayGoals = Number($("adminAwayGoals").value);
+
+  if(Number.isNaN(homeGoals) || Number.isNaN(awayGoals)){
+    alert("اكتب النتيجة بشكل صحيح");
+    return;
+  }
+
+  const { error } = await db.rpc("admin_override_prediction", {
+    p_user_id: userId,
+    p_match_id: matchId,
+    p_home_goals: homeGoals,
+    p_away_goals: awayGoals
+  });
+
+  if(error){
+    alert("فشل التعديل: " + error.message);
+    return;
+  }
+
+  alert("تم تعديل التوقع بنجاح");
+  await loadAll();
+}
