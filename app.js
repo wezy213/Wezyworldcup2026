@@ -280,14 +280,31 @@ function renderBracket(){
   $("bracketList").className="bracket-grid";
   $("bracketList").innerHTML=kos.map(m=>`<div class="bracket-card"><b>${m.round} - مباراة ${m.match_no}</b><br>${label(m.home_code,m.home_placeholder)} × ${label(m.away_code,m.away_placeholder)}<br><span class="small">${fmtDate(m.kickoff_at)}</span></div>`).join("");
 }
-
 function getLeaderboardRows(){
   return profiles.map(p=>{
     const ps=predictions.filter(x=>x.user_id===p.id);
-    return {...p,pts:ps.reduce((s,x)=>s+pointsForPrediction(x),0),count:ps.length};
-  }).sort((a,b)=>b.pts-a.pts || b.count-a.count || String(a.username).localeCompare(String(b.username),'ar'));
-}
 
+    const matchPoints=ps.reduce(
+      (sum,prediction)=>sum+pointsForPrediction(prediction),
+      0
+    );
+
+    const bonusPoints=Number(p.bonus_points||0);
+
+    return {
+      ...p,
+      matchPoints,
+      bonusPoints,
+      pts:matchPoints+bonusPoints,
+      count:ps.length
+    };
+  }).sort(
+    (a,b)=>
+      b.pts-a.pts ||
+      b.count-a.count ||
+      String(a.username).localeCompare(String(b.username),"ar")
+  );
+}
 function renderLeaderboard(){
   const rows=getLeaderboardRows();
   let prev={}; 
